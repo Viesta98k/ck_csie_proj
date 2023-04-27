@@ -54,12 +54,14 @@ void Csv::closeFile(){
                 for (char c : cell) {
                     if (c == '"') {
                         f << "\"\""; 
-                    } else {
+                    } 
+                    else {
                         f << c;
                     }
                 }
                 f << '"';
-            } else {
+            } 
+            else {
                 f << cell;
             }
 
