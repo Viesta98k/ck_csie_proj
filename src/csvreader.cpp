@@ -5,6 +5,7 @@
 #include"csvreader.hpp"
 
 using namespace std;
+
 void Csv::openFile(string fname){
     this->current_file_name=fname;
     ifstream f(current_file_name);
@@ -17,6 +18,7 @@ void Csv::openFile(string fname){
         stringstream ss(line);
         bool in_quotes=false;
         string current_cell;
+
         while (getline(ss,cell,',')){
             if(!in_quotes){
                 if(!cell.empty()&&cell.front()=='"'){
@@ -38,8 +40,10 @@ void Csv::openFile(string fname){
         }    
     }
 }
+
 void Csv::closeFile(){
     ofstream f(this->current_file_name);
+
     for (const auto& row : this->memory) {
         for (size_t i = 0; i < row.size(); ++i) {
             const string& cell = row[i];
@@ -67,14 +71,18 @@ void Csv::closeFile(){
     }
     f.close();
 }
+
 string Csv::readValueWithIndex(int row,int column){
     return this->memory[row][column];
 }
+
 void Csv::writeValueWithIndex(int row,int column,string data){
     this->memory[row][column]=data;
 }
+
 vector<vector<string>> Csv::readValueWithRange(int start_row,int end_row,int start_column,int end_column){
     vector<vector<string>>tmp;
+
     for(int i=start_row;i<=end_row;i++){
         vector<string>t;
         for(int j=start_column;j<=end_column;j++){
@@ -84,8 +92,10 @@ vector<vector<string>> Csv::readValueWithRange(int start_row,int end_row,int sta
     }
     return tmp;
 }
+
 void Csv::writeValueWithRange(int start_row,int end_row,int start_column,int end_column,vector<vector<string>> datas){
     this->memory.resize(end_row,vector<string>(end_column));
+
     for(int i=start_row;i<=end_row;i++){
         for(int j=start_column;j<=end_column;j++){
             this->memory[i][j]=datas[i-start_row][j-start_column];
