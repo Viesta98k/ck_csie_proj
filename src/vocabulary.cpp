@@ -6,11 +6,7 @@
 using namespace std;
 
 double vocabulary::initDifficultyOf(string vocab){
-    int count;
-    bool prev_letter=false;
-    for(int i=0;i<vocab.size();i++){
-        
-    }
+    
 }
 
 bool vocabulary::isVowel(char input){
@@ -18,5 +14,11 @@ bool vocabulary::isVowel(char input){
 }
 
 int vocabulary::countSyllable(string vocab){
-
+    int count;
+    bool prev_letter=false;
+    for(int i=0;i<vocab.size();i++){
+        if(isVowel(vocab[i])){
+            
+        }
+    }
 }
