@@ -37,7 +37,8 @@ void Csv::openFile(string fname){
                     in_quotes=false;
                 }
             }
-        }    
+        }
+        this->memory.push_back(row);
     }
 }
 
@@ -60,11 +61,9 @@ void Csv::closeFile(){
                     }
                 }
                 f << '"';
-            } 
-            else {
+            }else {
                 f << cell;
             }
-
             if (i != row.size() - 1) {
                 f << ',';
             }
@@ -72,6 +71,7 @@ void Csv::closeFile(){
         f << '\n';
     }
     f.close();
+    ~Csv();
 }
 
 string Csv::readValueWithIndex(int row,int column){
