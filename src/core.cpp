@@ -53,19 +53,19 @@ int Question::ret_dff(){
 
 SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_num, Profile usr_info){
     vector<int>indexs;
-    while(this->vocs.size()<8){
+    int limit=max(10,min(60,(int)pow(usr_info.ability,0.25)*10));   //字母陣列長寬最小10，最大60
+    this->width= limit;
+    this->height=limit;
+    int max_voc_num=max(3,min(25,(int)pow(usr_info.ability,0.25)*3)); //單字數量最少3，最多25
+    while(this->vocs.size()<max_voc_num){
         if(vocs.empty()){
             int index=randomNum(0,vocab_num);
-            if(abs(stoi(vocabs_info[index][2])-usr_info.ability)<5){
-                this->vocs.push_back(vocabs_info[index][0]);
-                this->definitions.push_back(vocabs_info[index][1]);
-                this->dff.push_back(stoi(vocabs_info[index][2]));
-                this->is_vertical.push_back(randomNum(0,2));
-                this->head_relative.push_back(make_pair(0,0));
-                indexs.push_back(index);
-            }else{
-                continue;
-            }
+            this->vocs.push_back(vocabs_info[index][0]);
+            this->definitions.push_back(vocabs_info[index][1]);
+            this->dff.push_back(stoi(vocabs_info[index][2]));
+            this->is_vertical.push_back(randomNum(0,2));
+            this->head_relative.push_back(make_pair(0,0));
+            indexs.push_back(index);
         }else{
             
         }
@@ -74,13 +74,19 @@ SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_nu
 
 vector<vector<char>> SpecialQuestion::giveCorrectAns(){
     vector<vector<char>>char_list;
+    char_list.resize(this->height,vector<char>(this->width));
     for(int i=0;i<this->vocs.size();i++){
         if(this->is_vertical[i]){
-
+            for(int j=0;j<this->vocs.size();j++){
+                char_list[head_relative[i].first][head_relative[i].second+j]=this->vocs[i][j];
+            }
         }else{
-
+            for(int j=0;j<vocs.size();j++){
+                char_list[head_relative[i].first+j][head_relative[i].second]=this->vocs[i][j];
+            }
         }
     }
+    return char_list;
 }
 
 vector<int> SpecialQuestion::ret_dff(){
@@ -194,12 +200,34 @@ void Game::react(){
     }
 }
 
-void Game::update(){    //提出新的問題、更新螢幕畫面
+void Game::update(){    //提出新的問題、更新遊戲物件和數據
     
 }
 void Game::newProfile(string profile_name){
-        
+        Csv csv;
+        csv.openFile(profile_path);
+        int index=0;
+        while(csv.readValueWithIndex(index,0)!=""){
+            index++;
+        }
+        //寫入資料檔名稱、等級、能力值
+        csv.writeValueWithIndex(index,0,profile_name);
+        csv.writeValueWithIndex(index,1,"1");
+        csv.writeValueWithIndex(index,2,0);
+        //Done
+        csv.closeFile();
 }
 void Game::useProfile(string profile_name){
-    
+    Csv csv;
+    csv.openFile(profile_path);
+    int index=0;
+    while(csv.readValueWithIndex(index,0)!=""){
+        if(csv.readValueWithIndex(index,0)==profile_name){
+            this->profile.profile_name=profile_name;
+            this->profile.level=stoi(csv.readValueWithIndex(index,1));
+            this->profile.ability=stoi(csv.readValueWithIndex(index,2));
+            break;
+        }
+    }
+    csv.closeFile();
 }

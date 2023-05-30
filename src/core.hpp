@@ -20,6 +20,7 @@ class Object{
     int X,Y;  //物件位置
     double rX,rY,scale; //物件轉角與縮放倍率
     string render_data_source;  //渲染資料來源
+    bool show;  //顯示或隱藏
 };
 class Question{
   public:
@@ -45,6 +46,7 @@ class SpecialQuestion{  //就是填字遊戲
     vector<int>dff; //各單字難度
     vector<bool>is_vertical;  //單字是垂直(上至下)或水平(左至右)排列
     vector<pair<int,int>>head_relative; //第一個字母格的相對位置
+    int width, height;  //字母陣列長寬
 };
 
 
