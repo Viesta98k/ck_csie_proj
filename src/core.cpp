@@ -63,7 +63,7 @@ int Question::ret_dff(){
 
 SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_num, Profile usr_info){
     vector<int>indexs;
-    int limit=max(10,min(60,(int)pow(usr_info.ability,0.25)*10));   //字母陣列長寬最小10，最大60
+    int limit=max(10,min(30,(int)pow(usr_info.ability,0.25)*10));   //字母陣列長寬最小10，最大30
     this->width= limit;
     this->height=limit;
     int max_voc_num=max(3,min(15,(int)pow(usr_info.ability,0.25)*2)); //單字數量最少3，最多15
@@ -77,7 +77,51 @@ SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_nu
             this->head_relative.push_back(make_pair(0,0));
             indexs.push_back(index);
         }else{
-            
+            string voc_tmp="";
+            string definition_tmp="";
+            int dff_tmp=0;
+            vector<vector<char>>tmp=this->giveCorrectAns();
+            while(voc_tmp==""){
+                int row=randomNum(0,width-3);
+                int column=randomNum(0,height-3);
+                bool is_vertical=randomNum(0,2);
+                if(is_vertical){    //垂直
+                    for(int i=0;i<vocabs_info.size();i++){  //遍歷單字表
+                        bool ok=true;
+                        for(int j=0;j<vocabs_info[i][0].size();j++){ //單字契合檢定
+                            if(vocabs_info[i][0][j]!=tmp[row][column+j]&&tmp[row][column+j]!=NULL){
+                                ok=false;
+                                break;
+                            }
+                        }
+                        if(ok){ //水平
+                            voc_tmp=vocabs_info[i][0];
+                            definition_tmp=vocabs_info[i][1];
+                            dff_tmp=stoi(vocabs_info[i][2]);
+                            break;
+                        }
+                    }
+                }else{
+                    for(int i=0;i<vocabs_info.size();i++){  //遍歷單字表
+                        bool ok=true;
+                        for(int j=0;j<vocabs_info[i][0].size();j++){ //單字契合檢定
+                            if(vocabs_info[i][0][j]!=tmp[row+j][column]&&tmp[row+j][column]!=NULL){
+                                ok=false;
+                                break;
+                            }
+                        }
+                        if(ok){
+                            voc_tmp=vocabs_info[i][0];
+                            definition_tmp=vocabs_info[i][1];
+                            dff_tmp=stoi(vocabs_info[i][2]);
+                            break;
+                        }
+                    }
+                }
+            }
+            this->vocs.push_back(voc_tmp);
+            this->definitions.push_back(definition_tmp);
+            this->dff.push_back(dff_tmp);
         }
     }
 }
@@ -109,7 +153,18 @@ int SpecialQuestion::ret_vocs_num(){
 pair<int,int> SpecialQuestion::ret_size(){
     return make_pair(this->width,this->height);
 }
-
+Vocab SpecialQuestion::ret_voc(int i){
+    return this->vocs[i];
+}
+string SpecialQuestion::ret_def(int i){
+    return this->definitions[i];
+}
+bool SpecialQuestion::ret_vertical(int i){
+    return this->is_vertical[i];
+}
+pair<int,int> SpecialQuestion::ret_relative(int i){
+    return this->head_relative[i];
+}
 Game::Game(){
     Csv csv;
     csv.openFile(vocab_file_path);
@@ -127,10 +182,6 @@ Game::Game(){
     static_object.push_back(player_protrait);
     GameObject enemy_portrait=GameObject(1160,0,1280,120,"resource/player_portrait_"+to_string((int)sqrt(randomNum(0,13)*this->profile.level))+".jpg");
     static_object.push_back(enemy_portrait);
-    GameObject player_info=GameObject(0,120,150,240,"resource/player_info.jpg");
-    static_object.push_back(player_info);
-    GameObject enemy_info=GameObject(1130,120,1280,240,"resource/player_info.jpg");
-    static_object.push_back(enemy_info);
 }
 void Game::calculate(vector<int>dff, vector<bool>is_correct){   //攻擊、防禦、特殊攻擊(combo>=3)、反擊
     switch (this->situation){

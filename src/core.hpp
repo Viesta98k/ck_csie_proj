@@ -12,7 +12,7 @@ typedef string Vocab;
 class Profile{
   public:
     string profile_name;  //玩家名稱(亦為資料檔名稱)
-    int level;  //玩家等級(決定稱號)
+    int level;  //玩家等級
     int ability;   //能力值
 };
 class GameObject{
@@ -44,6 +44,10 @@ class SpecialQuestion{  //就是填字遊戲
     vector<int> ret_dff();
     int ret_vocs_num();
     pair<int,int> ret_size();
+    Vocab ret_voc(int i);
+    string ret_def(int i);
+    bool ret_vertical(int i);
+    pair<int,int> ret_relative(int i);
   private:
     vector<Vocab>vocs;  //所有單字
     vector<string>definitions;  //所有單字的意思
@@ -58,11 +62,10 @@ class Game{
   public:
     Game();
     void calculate(vector<int>dff, vector<bool>is_correct);  //計算操作效果
-    int react();  //敵人的反應
+    bool react();  //敵人的反應
     void newProfile(string profile_name);  //新增資料檔
     void useProfile(string profile_name); //切換資料檔並更新數據
     void leaveGmae();
-    bool is_special_question;
     bool in_level;  //關卡或主選單
     int hp, enemy_hp; //敵我生命值
     int combo;  //連擊，可以造成至多十倍傷害
