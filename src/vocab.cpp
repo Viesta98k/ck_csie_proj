@@ -14,8 +14,8 @@ bool isVowel(char c){
 int main(){
     Csv csv;
     string target_file;
-    cin>>target_files;
-    csv.openFile(target_files);
+    cin>>target_file;
+    csv.openFile(target_file);
     int i=1;
     string tmp=csv.readValueWithIndex(0,i);
     while(tmp!=" "){
@@ -29,7 +29,7 @@ int main(){
                 in_syllabus=false;
             }
         }
-        csv.writeValueWithIndex(2,i, syllabus*tmp.length);
+        csv.writeValueWithIndex(2,i, to_string(syllabus*tmp.length()));
         i++;
         tmp=csv.readValueWithIndex(1,i);
     }

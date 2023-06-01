@@ -71,7 +71,6 @@ void Csv::closeFile(){
         f << '\n';
     }
     f.close();
-    ~Csv();
 }
 
 string Csv::readValueWithIndex(int row,int column){

@@ -15,13 +15,15 @@ class Profile{
     int level;  //玩家等級(決定稱號)
     int ability;   //能力值
 };
-class Object{
+class GameObject{
   public:
-    int X,Y;  //物件位置
-    double rX,rY,scale; //物件轉角與縮放倍率
-    string render_data_source;  //渲染資料來源
-    bool show;  //顯示或隱藏
+    int x1,y1,x2,y2;
+    string render_data_source;
+    bool rendered;
+    void eventHandle(); //main中定義
+    GameObject(int x1,int y1,int x2,int y2, string render_data_source);
 };
+
 class Question{
   public:
     Question(vector<vector<string>>vocabs_info, int vocab_num, Profile usr_info);
@@ -40,6 +42,8 @@ class SpecialQuestion{  //就是填字遊戲
     SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_num, Profile usr_info);
     vector<vector<char>> giveCorrectAns();
     vector<int> ret_dff();
+    int ret_vocs_num();
+    pair<int,int> ret_size();
   private:
     vector<Vocab>vocs;  //所有單字
     vector<string>definitions;  //所有單字的意思
@@ -54,17 +58,21 @@ class Game{
   public:
     Game();
     void calculate(vector<int>dff, vector<bool>is_correct);  //計算操作效果
-    void react();  //敵人的反應
-    void update();  //玩家操作後更新物件和狀態
+    int react();  //敵人的反應
     void newProfile(string profile_name);  //新增資料檔
     void useProfile(string profile_name); //切換資料檔並更新數據
-  private:
-    vector<vector<string>>vocabs_info;  //單字表
+    void leaveGmae();
+    bool is_special_question;
     bool in_level;  //關卡或主選單
-    int vocab_num;  //檔案裡的字彙數量
     int hp, enemy_hp; //敵我生命值
     int combo;  //連擊，可以造成至多十倍傷害
     int score, enemy_score; //分數，決定護甲值(傷害減免=我方分數/敵我分數和)
+    vector<GameObject>static_object;
+    Question current_question;
+    SpecialQuestion current_special_question;  
+  private:
+    vector<vector<string>>vocabs_info;  //單字表
+    int vocab_num;  //檔案裡的字彙數量
     int situation, enemy_situtation;  //敵我狀態
     Profile profile;  //目前的使用者資料檔
 };

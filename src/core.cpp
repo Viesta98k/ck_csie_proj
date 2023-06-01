@@ -10,8 +10,9 @@
 
 using namespace std;
 
-const string vocab_file_path="vocab.csv";
-const string profile_path="profile.csv";
+const string vocab_file_path="data/vocab.csv";
+const string profile_path="data/profile.csv";
+
 
 int randomNum(int min,int max){
     /* 固定亂數種子 */
@@ -21,6 +22,15 @@ int randomNum(int min,int max){
   /* 產生 [min , max) 的浮點數亂數 */
   int x = (int)(max - min) * rand() / (RAND_MAX + 1.0) + min;
   return x;
+}
+
+GameObject::GameObject(int x1,int y1,int x2,int y2, string render_data_source){
+    this->x1=x1;
+    this->y1=y1;
+    this->x2=x2;
+    this->y2=y2;
+    this->render_data_source=render_data_source;
+    this->rendered=false;
 }
 
 Question::Question(vector<vector<string>>vocabs_info, int vocab_num, Profile usr_info){
@@ -56,7 +66,7 @@ SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_nu
     int limit=max(10,min(60,(int)pow(usr_info.ability,0.25)*10));   //字母陣列長寬最小10，最大60
     this->width= limit;
     this->height=limit;
-    int max_voc_num=max(3,min(25,(int)pow(usr_info.ability,0.25)*3)); //單字數量最少3，最多25
+    int max_voc_num=max(3,min(15,(int)pow(usr_info.ability,0.25)*2)); //單字數量最少3，最多15
     while(this->vocs.size()<max_voc_num){
         if(vocs.empty()){
             int index=randomNum(0,vocab_num);
@@ -73,7 +83,7 @@ SpecialQuestion::SpecialQuestion(vector<vector<string>>vocabs_info, int vocab_nu
 }
 
 vector<vector<char>> SpecialQuestion::giveCorrectAns(){
-    vector<vector<char>>char_list;
+    vector<vector<char>>char_list(this->height,vector<char>(this->width,NULL));
     char_list.resize(this->height,vector<char>(this->width));
     for(int i=0;i<this->vocs.size();i++){
         if(this->is_vertical[i]){
@@ -93,12 +103,34 @@ vector<int> SpecialQuestion::ret_dff(){
     return this->dff;
 }
 
+int SpecialQuestion::ret_vocs_num(){
+    return this->vocs.size();    
+}
+pair<int,int> SpecialQuestion::ret_size(){
+    return make_pair(this->width,this->height);
+}
+
 Game::Game(){
     Csv csv;
     csv.openFile(vocab_file_path);
     this->vocab_num=stoi(csv.readValueWithIndex(0,0));
     this->vocabs_info=csv.readValueWithRange(1,vocab_num,0,2);
     csv.closeFile();
+    this->profile.level=max(1,min((int)(log(this->profile.ability)/log(3)),12));
+    //初始化問題
+    this->current_question=Question(this->vocabs_info,this->vocab_num,this->profile);
+    this->current_special_question=SpecialQuestion(this->vocabs_info,this->vocab_num,this->profile);
+    //初始化元件
+    GameObject game_title=GameObject(320,240,960,480,"resource/title.jpg");
+    static_object.push_back(game_title);
+    GameObject player_protrait=GameObject(0,0,120,120,"resource/player_portrait_"+to_string(this->profile.level)+".jpg");
+    static_object.push_back(player_protrait);
+    GameObject enemy_portrait=GameObject(1160,0,1280,120,"resource/player_portrait_"+to_string((int)sqrt(randomNum(0,13)*this->profile.level))+".jpg");
+    static_object.push_back(enemy_portrait);
+    GameObject player_info=GameObject(0,120,150,240,"resource/player_info.jpg");
+    static_object.push_back(player_info);
+    GameObject enemy_info=GameObject(1130,120,1280,240,"resource/player_info.jpg");
+    static_object.push_back(enemy_info);
 }
 void Game::calculate(vector<int>dff, vector<bool>is_correct){   //攻擊、防禦、特殊攻擊(combo>=3)、反擊
     switch (this->situation){
@@ -127,7 +159,7 @@ void Game::calculate(vector<int>dff, vector<bool>is_correct){   //攻擊、防�
             int score_minus=100*this->profile.ability/dff[0];
             this->score=max(0,this->score-score_minus);  
             this->enemy_score+=score_minus;
-            this->enemy_situtation=1;   
+            this->enemy_situtation=3;   //敵方將行普通攻擊
         }
         break;
     case 2: //填字
@@ -171,7 +203,7 @@ void Game::calculate(vector<int>dff, vector<bool>is_correct){   //攻擊、防�
         break;
     }
 }
-void Game::react(){
+bool Game::react(){
     switch(this->enemy_situtation){
         case 0: 
             int r=randomNum(0,101);
@@ -180,13 +212,17 @@ void Game::react(){
             else  //20%機率回血
                 this->enemy_hp+=randomNum(5,26);
             r=randomNum(0,101);
-            if(r<50)    //50%機率無法行動，玩家可攻擊
+            if(r<50){    //50%機率無法行動，玩家可攻擊
                 this->combo>=3? this->situation=0 : this->situation=2;
-            else    //50%機率反擊玩家需防禦
+                this->current_question=Question(this->vocabs_info,this->vocab_num,this->profile);
+            }
+            else{    //50%機率反擊玩家需防禦
                 this->situation=1;
+                this->current_special_question=SpecialQuestion(this->vocabs_info,this->vocab_num,this->profile);
+            }
             break;
         case 1:
-            //敵人強化
+            //敵人準備反擊，強化
             this->enemy_score*=randomNum(101,201)/100;
             this->enemy_hp+=randomNum(5,26);
             this->situation=1;
@@ -198,10 +234,7 @@ void Game::react(){
             this->situation=1;
             break;
     }
-}
-
-void Game::update(){    //提出新的問題、更新遊戲物件和數據
-    
+    return (this->situation==2||this->situation==3);
 }
 void Game::newProfile(string profile_name){
         Csv csv;
@@ -230,4 +263,7 @@ void Game::useProfile(string profile_name){
         }
     }
     csv.closeFile();
+}
+void Game::leaveGmae(){
+    this->in_level=false;
 }
