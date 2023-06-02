@@ -1,23 +1,23 @@
 #include<iostream>
 #include<string>
 #include<vector>
-#include"csv.hpp"
+#include"VocFile.hpp"
 
 using namespace std;
 
-class Csv;
+class VocFile;
 
 bool isVowel(char c){
     return (c=='a'||c=='e'||c=='i'||c=='o'||c=='u'||c=='y');
 }
 
 int main(){
-    Csv csv;
+    VocFile vf;
     string target_file;
     cin>>target_file;
-    csv.openFile(target_file);
+    vf.openFile(target_file);
     int i=1;
-    string tmp=csv.readValueWithIndex(0,i);
+    string tmp=vf.readValue(0,i);
     while(tmp!=" "){
         int syllabus=0;
         bool in_syllabus=false;
@@ -29,8 +29,9 @@ int main(){
                 in_syllabus=false;
             }
         }
-        csv.writeValueWithIndex(2,i, to_string(syllabus*tmp.length()));
+        vf.writeValue(2,i, to_string(syllabus*tmp.length()));
         i++;
-        tmp=csv.readValueWithIndex(1,i);
+        tmp=vf.readValue(1,i);
     }
+    vf.closeFile();
 }
