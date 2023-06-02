@@ -17,7 +17,7 @@ int main(){
     cin>>target_file;
     vf.openFile(target_file);
     int i=1;
-    string tmp=vf.readValue(0,i);
+    string tmp=vf.readValue(i,0);
     while(tmp!=" "){
         int syllabus=0;
         bool in_syllabus=false;
